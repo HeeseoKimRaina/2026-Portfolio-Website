@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="518.902" height="410.644" viewBox="0 0 518.902 410.644" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Soft color field" filter="url(#filter0_f_0_19)">
+<ellipse cx="259.451" cy="205.322" rx="189.451" ry="135.322" fill="#F5A3A3" fill-opacity="0.22"/>
+</g>
+<defs>
+<filter id="filter0_f_0_19" x="0" y="0" width="518.902" height="410.644" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="35" result="effect1_foregroundBlur_0_19"/>
+</filter>
+</defs>
+</svg>
