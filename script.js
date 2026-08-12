@@ -28,6 +28,11 @@ const drawStateJourney = () => {
 const buttons = document.querySelectorAll('[data-page], [data-next]');
 const pageOrder = ['intro', 'position', 'projects'];
 let isChangingPage = false;
+let introFlowTimers = [];
+const stopIntroFlow = () => {
+  introFlowTimers.forEach((timer) => window.clearTimeout(timer));
+  introFlowTimers = [];
+};
 const movePage = (direction) => {
   const activePage = document.querySelector('[data-page-panel].is-active')?.dataset.pagePanel;
   const nextPage = pageOrder[pageOrder.indexOf(activePage) + direction];
@@ -37,7 +42,7 @@ const movePage = (direction) => {
   window.setTimeout(() => { isChangingPage = false; }, 950);
   return true;
 };
-const show = (name) => {
+const show = (name, syncUrl = true) => {
   const currentPage = document.querySelector('[data-page-panel].is-active')?.dataset.pagePanel;
   const direction = pageOrder.indexOf(name) > pageOrder.indexOf(currentPage) ? 'forward' : 'backward';
   document.querySelectorAll('[data-page-panel]').forEach((panel) => {
@@ -52,14 +57,20 @@ const show = (name) => {
     nextPanel.classList.add(`is-entering-${direction}`);
   }
   document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.page === name));
+  if (syncUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', name);
+    window.history.replaceState({}, '', url);
+  }
   requestAnimationFrame(drawStateJourney);
 };
-buttons.forEach((button) => button.addEventListener('click', () => show(button.dataset.page || button.dataset.next)));
+buttons.forEach((button) => button.addEventListener('click', () => { stopIntroFlow(); show(button.dataset.page || button.dataset.next); }));
 let wheelDistance = 0;
 let wheelDirection = 0;
 let wheelResetTimer;
 window.addEventListener('wheel', (event) => {
   if (Math.abs(event.deltaY) < 8) return;
+  stopIntroFlow();
   const direction = event.deltaY > 0 ? 1 : -1;
   const activePage = document.querySelector('[data-page-panel].is-active')?.dataset.pagePanel;
   if (!pageOrder[pageOrder.indexOf(activePage) + direction]) return;
@@ -76,7 +87,7 @@ window.addEventListener('wheel', (event) => {
   }
 }, { passive: false });
 let touchStartY = null;
-window.addEventListener('touchstart', (event) => { touchStartY = event.touches[0]?.clientY ?? null; }, { passive: true });
+window.addEventListener('touchstart', (event) => { stopIntroFlow(); touchStartY = event.touches[0]?.clientY ?? null; }, { passive: true });
 window.addEventListener('touchend', (event) => {
   const touchEndY = event.changedTouches[0]?.clientY;
   if (touchStartY === null || touchEndY === undefined) return;
@@ -86,6 +97,13 @@ window.addEventListener('touchend', (event) => {
 }, { passive: true });
 document.querySelectorAll('[data-project]').forEach((card) => card.addEventListener('click', () => { window.location.href = `project.html?project=${card.dataset.project}`; }));
 const requestedPage = new URLSearchParams(window.location.search).get('page');
-if (requestedPage && document.querySelector(`[data-page-panel="${requestedPage}"]`)) show(requestedPage);
+const hasSavedPage = requestedPage && document.querySelector(`[data-page-panel="${requestedPage}"]`);
+show(hasSavedPage ? requestedPage : 'intro', false);
+if (!hasSavedPage && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  introFlowTimers.push(window.setTimeout(() => {
+    show('position');
+    introFlowTimers.push(window.setTimeout(() => show('projects'), 5000));
+  }, 3500));
+}
 window.addEventListener('resize', drawStateJourney);
 requestAnimationFrame(drawStateJourney);
