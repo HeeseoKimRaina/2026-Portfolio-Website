@@ -34,18 +34,46 @@ const movePage = (direction) => {
   if (!nextPage || isChangingPage) return false;
   isChangingPage = true;
   show(nextPage);
-  window.setTimeout(() => { isChangingPage = false; }, 650);
+  window.setTimeout(() => { isChangingPage = false; }, 950);
   return true;
 };
 const show = (name) => {
-  document.querySelectorAll('[data-page-panel]').forEach((panel) => panel.classList.toggle('is-active', panel.dataset.pagePanel === name));
+  const currentPage = document.querySelector('[data-page-panel].is-active')?.dataset.pagePanel;
+  const direction = pageOrder.indexOf(name) > pageOrder.indexOf(currentPage) ? 'forward' : 'backward';
+  document.querySelectorAll('[data-page-panel]').forEach((panel) => {
+    const isTarget = panel.dataset.pagePanel === name;
+    panel.classList.toggle('is-active', isTarget);
+    if (!isTarget) panel.classList.remove('is-entering-forward', 'is-entering-backward');
+  });
+  const nextPanel = document.querySelector(`[data-page-panel="${name}"]`);
+  if (nextPanel && currentPage && currentPage !== name) {
+    nextPanel.classList.remove('is-entering-forward', 'is-entering-backward');
+    void nextPanel.offsetWidth;
+    nextPanel.classList.add(`is-entering-${direction}`);
+  }
   document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.page === name));
   requestAnimationFrame(drawStateJourney);
 };
 buttons.forEach((button) => button.addEventListener('click', () => show(button.dataset.page || button.dataset.next)));
+let wheelDistance = 0;
+let wheelDirection = 0;
+let wheelResetTimer;
 window.addEventListener('wheel', (event) => {
-  if (Math.abs(event.deltaY) < 18) return;
-  if (movePage(event.deltaY > 0 ? 1 : -1)) event.preventDefault();
+  if (Math.abs(event.deltaY) < 8) return;
+  const direction = event.deltaY > 0 ? 1 : -1;
+  const activePage = document.querySelector('[data-page-panel].is-active')?.dataset.pagePanel;
+  if (!pageOrder[pageOrder.indexOf(activePage) + direction]) return;
+  event.preventDefault();
+  if (wheelDirection && wheelDirection !== direction) wheelDistance = 0;
+  wheelDirection = direction;
+  wheelDistance += Math.min(Math.abs(event.deltaY), 90);
+  window.clearTimeout(wheelResetTimer);
+  wheelResetTimer = window.setTimeout(() => { wheelDistance = 0; wheelDirection = 0; }, 220);
+  if (wheelDistance >= 360) {
+    wheelDistance = 0;
+    wheelDirection = 0;
+    movePage(direction);
+  }
 }, { passive: false });
 let touchStartY = null;
 window.addEventListener('touchstart', (event) => { touchStartY = event.touches[0]?.clientY ?? null; }, { passive: true });
@@ -53,7 +81,7 @@ window.addEventListener('touchend', (event) => {
   const touchEndY = event.changedTouches[0]?.clientY;
   if (touchStartY === null || touchEndY === undefined) return;
   const distance = touchStartY - touchEndY;
-  if (Math.abs(distance) > 45) movePage(distance > 0 ? 1 : -1);
+  if (Math.abs(distance) > 110) movePage(distance > 0 ? 1 : -1);
   touchStartY = null;
 }, { passive: true });
 document.querySelectorAll('[data-project]').forEach((card) => card.addEventListener('click', () => { window.location.href = `project.html?project=${card.dataset.project}`; }));

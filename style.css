@@ -17,3 +17,4 @@
 .position .state>img:first-child,.position .state .dot{transform:none}
 .position .journey-art,.position .states{transform:translateX(24px)}@media(max-width:700px){.position .journey-art,.position .states{transform:translateX(18px)}}
 .position .journey-art .f1{top:-11%}.position .journey-art .f3{top:18%}@media(max-width:700px){.position .journey-art .f1{top:-25%}.position .journey-art .f3{top:11%}}
+.page.is-entering-forward{animation:page-slide-up .9s cubic-bezier(.22,.61,.36,1) both}.page.is-entering-backward{animation:page-slide-down .9s cubic-bezier(.22,.61,.36,1) both}@keyframes page-slide-up{from{opacity:0;transform:translateY(10%)}to{opacity:1;transform:translateY(0)}}@keyframes page-slide-down{from{opacity:0;transform:translateY(-10%)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.page.is-entering-forward,.page.is-entering-backward{animation:none}}
